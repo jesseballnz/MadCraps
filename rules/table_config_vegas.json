@@ -1,0 +1,9 @@
+{
+  "name": "Vegas Classic",
+  "field": { "two": 2.0, "twelve": 3.0 },
+  "odds": { "4": 2.0, "5": 1.5, "6": 1.2, "8": 1.2, "9": 1.5, "10": 2.0 },
+  "place_payouts": { "4": 1.8, "5": 1.4, "6": 1.1666667, "8": 1.1666667, "9": 1.4, "10": 1.8 },
+  "buy_commission_pct": 0.05,
+  "hardway_payouts": { "4": 7.0, "6": 9.0, "8": 9.0, "10": 7.0 },
+  "prop_payouts": { "Any7": 4.0, "AnyCraps": 7.0, "AceDeuce": 15.0 }
+}

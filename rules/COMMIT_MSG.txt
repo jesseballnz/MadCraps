@@ -1,0 +1,1 @@
+scaffold: expand rules engine with common bet types and add table config and expanded tests
