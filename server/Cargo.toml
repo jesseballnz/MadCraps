@@ -1,0 +1,13 @@
+[package]
+name = "madcraps-server"
+version = "0.1.0"
+edition = "2021"
+description = "Authoritative Rust server for MadCraps (signed rolls, bet validation, audit logs)"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4"] }
+rand = "0.8"
+chrono = "0.4"
