@@ -100,19 +100,11 @@ std::vector<Payout> RulesEngine::resolveBetsOnRoll(const std::vector<Bet>& bets,
                 }
                 break;
             case BetType::Come:
-                // Come behaves like PassLine but applied after come-out; if point==0 then treating like passline come-out
                 if (b.target == 0) {
-                    // not yet established, treat like passline come-out: wins on 7/11, loses on 2/3/12, otherwise point for the come bet is set elsewhere by game state
-                    if (point == 0) {
-                        if (total == 7 || total == 11) { p.net = b.amount; p.description = "Come win (come-out)"; }
-                        else if (total == 2 || total == 3 || total == 12) { p.net = -b.amount; p.description = "Come loss (come-out)"; }
-                        else { p.net = 0.0; p.description = "Come point established (prototype)"; }
-                    } else {
-                        // If the come bet has no target and the table point exists, usually a come bet is moved to its own point; here we do not model that state transition in prototype
-                        p.net = 0.0; p.description = "Come unresolved (prototype)";
-                    }
+                    if (total == 7 || total == 11) { p.net = b.amount; p.description = "Come win (come-out)"; }
+                    else if (total == 2 || total == 3 || total == 12) { p.net = -b.amount; p.description = "Come loss (come-out)"; }
+                    else { p.net = 0.0; p.description = "Come point established"; }
                 } else {
-                    // come bet with a target (point assigned)
                     if (total == b.target) { p.net = b.amount; p.description = "Come win (point made)"; }
                     else if (total == 7) { p.net = -b.amount; p.description = "Come loss (seven out)"; }
                     else { p.net = 0.0; p.description = "No resolution"; }
@@ -120,8 +112,10 @@ std::vector<Payout> RulesEngine::resolveBetsOnRoll(const std::vector<Bet>& bets,
                 break;
             case BetType::DontCome:
                 if (b.target == 0) {
-                    if (point == 0) { p.net = 0.0; p.description = "DontCome unresolved (prototype)"; }
-                    else { p.net = 0.0; p.description = "DontCome unresolved (prototype)"; }
+                    if (total == 2 || total == 3) { p.net = b.amount; p.description = "DontCome win (come-out)"; }
+                    else if (total == 7 || total == 11) { p.net = -b.amount; p.description = "DontCome loss (come-out)"; }
+                    else if (total == 12) { p.net = 0.0; p.description = "DontCome push (12)"; }
+                    else { p.net = 0.0; p.description = "DontCome point established"; }
                 } else {
                     if (total == 7) { p.net = b.amount; p.description = "DontCome win (seven out)"; }
                     else if (total == b.target) { p.net = -b.amount; p.description = "DontCome loss (point made)"; }
@@ -210,6 +204,17 @@ std::vector<Payout> RulesEngine::resolveBetsOnRoll(const std::vector<Bet>& bets,
             case BetType::AnyCraps:
                 if (isCraps(total)) { auto it = cfg_.prop_payouts.find("AnyCraps"); double mult = (it!=cfg_.prop_payouts.end())?it->second:7.0; p.net = b.amount * mult; p.description = "Any Craps wins"; }
                 else { p.net = -b.amount; p.description = "Any Craps loses"; }
+                break;
+            case BetType::Horn:
+                if (total == 2 || total == 12) {
+                    auto it = cfg_.prop_payouts.find("Horn"); double mult = (it!=cfg_.prop_payouts.end())?it->second:30.0; // common 30:1 on 2/12
+                    p.net = b.amount * mult; p.description = "Horn wins (2 or 12)";
+                } else if (total == 3 || total == 11) {
+                    auto it = cfg_.prop_payouts.find("Horn"); double mult = (it!=cfg_.prop_payouts.end())?it->second:15.0; // 15:1 on 3/11
+                    p.net = b.amount * mult; p.description = "Horn wins (3 or 11)";
+                } else {
+                    p.net = -b.amount; p.description = "Horn loses";
+                }
                 break;
             default:
                 p.net = 0.0; p.description = "Unhandled bet type";

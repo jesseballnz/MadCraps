@@ -24,6 +24,7 @@ enum class BetType {
     Big8,
     Any7,
     AnyCraps, // 2,3,12
+    Horn,     // 2,3,11,12 (pays on specific numbers)
     // ...additional bet types may be added
 };
 
