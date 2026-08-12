@@ -1,50 +1,50 @@
 name: CI - build, test & simulate
 
 on:
- push:
- branches:
- - scaffold/prototype
- pull_request:
- branches:
- - scaffold/prototype
- workflow_dispatch: {}
+  push:
+    branches:
+      - scaffold/prototype
+  pull_request:
+    branches:
+      - scaffold/prototype
+  workflow_dispatch: {}
 
 jobs:
- build-and-test:
- runs-on: ubuntu-latest
- steps:
- - uses: actions/checkout@v4
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
- - name: Install dependencies
- run: |
- sudo apt-get update
- sudo apt-get install -y build-essential cmake
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
 
- - name: Build rules library
- working-directory: rules
- run: |
- mkdir -p build
- cd build
- cmake ..
- cmake --build . --config Release
+      - name: Build rules library
+        working-directory: rules
+        run: |
+          mkdir -p build
+          cd build
+          cmake ..
+          cmake --build . --config Release
 
- - name: Run unit tests
- working-directory: rules/build
- run: |
- if [ -f rules_tests ]; then ./rules_tests || true; fi
- if [ -f rules_tests_expanded ]; then ./rules_tests_expanded || true; fi
+      - name: Run unit tests
+        working-directory: rules/build
+        run: |
+          if [ -f rules_tests ]; then ./rules_tests || true; fi
+          if [ -f rules_tests_expanded ]; then ./rules_tests_expanded || true; fi
 
- - name: Run small simulator
- working-directory: rules/build
- env:
- SIM_TRIALS: 200000
- run: |
- if [ -f tools/large_simulator ]; then ./tools/large_simulator $SIM_TRIALS || true; fi
+      - name: Run large simulator
+        working-directory: rules/build
+        env:
+          SIM_TRIALS: 200000
+        run: |
+          if [ -f large_simulator ]; then ./large_simulator $SIM_TRIALS || true; fi
 
- - name: Upload simulation artifacts
- uses: actions/upload-artifact@v4
- with:
- name: simulation-results
- path: |
- rules/build/simulation_results.csv
- rules/build/simulation_report.md
+      - name: Upload simulation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulation-results
+          path: |
+            rules/build/simulation_results.csv
+            rules/build/simulation_report.md
