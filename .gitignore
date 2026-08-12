@@ -1,8 +1,20 @@
-.DS_Store
+# Build artefacts
 
-# Editors
-.idea/
+build/
+*.o
+*.obj
+*.exe
+
+# Visual Studio / Xcode
 .vscode/
+.idea/
+*.sln
+*.vcxproj
+*.xcodeproj
 
-# Logs
-*.log
+# Unreal
+Binaries/
+DerivedDataCache/
+Saved/
+Intermediate/
+
