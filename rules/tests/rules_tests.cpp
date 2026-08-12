@@ -7,6 +7,7 @@ int main() {
     madcraps::TableConfig cfg;
     cfg.field_two_payout = 2.0;
     cfg.field_twelve_payout = 3.0;
+    cfg.place_payout[6] = 7.0 / 6.0;
     engine.setTableConfig(cfg);
 
     // deterministic seed for tests
@@ -42,7 +43,7 @@ int main() {
 
     // Test Place 6 payout
     {
-        madcraps::Bet b{madcraps::BetType::Place6, 6.0};
+        madcraps::Bet b{madcraps::BetType::Place, 6.0, 6};
         madcraps::RollResult r{3,3}; // 6
         auto payouts = engine.resolveBetsOnRoll(std::vector<madcraps::Bet>{b}, r, 0);
         // We expect payout 7:6 on a 6 -> 7/6 * 6 = 7

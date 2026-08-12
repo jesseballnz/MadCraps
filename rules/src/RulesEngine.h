@@ -14,18 +14,20 @@ enum class BetType {
     DontPass,
     Come,
     DontCome,
-    Odds,      // attached to a point (target)
+    Odds,          // attached to a point (target)
     Field,
-    Place,     // target set in Bet.target
-    Buy,       // target set in Bet.target (buy takes commission on win)
-    Lay,       // target set in Bet.target
-    Hardway,   // target set in Bet.target (4,6,8,10)
+    Place,         // target set in Bet.target
+    Buy,           // target set in Bet.target (buy takes commission on win)
+    Lay,           // target set in Bet.target
+    Hardway,       // target set in Bet.target (4,6,8,10)
     Big6,
     Big8,
     Any7,
-    AnyCraps, // 2,3,12
-    Horn,     // 2,3,11,12 (pays on specific numbers)
-    // ...additional bet types may be added
+    AnyCraps,      // 2,3,12
+    Horn,          // 2,3,11,12 one-roll (different payouts)
+    Yo,            // 11 one-roll
+    AceDeuce,      // 3 one-roll
+    // Future: Hop bets, Fire Bet, etc.
 };
 
 struct Bet {

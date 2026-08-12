@@ -5,5 +5,5 @@
   "place_payouts": { "4": 1.8, "5": 1.4, "6": 1.1666667, "8": 1.1666667, "9": 1.4, "10": 1.8 },
   "buy_commission_pct": 0.05,
   "hardway_payouts": { "4": 7.0, "6": 9.0, "8": 9.0, "10": 7.0 },
-  "prop_payouts": { "Any7": 4.0, "AnyCraps": 7.0, "AceDeuce": 15.0 }
+  "prop_payouts": { "Any7": 4.0, "AnyCraps": 7.0, "AceDeuce": 15.0, "Yo": 15.0, "Horn2or12": 30.0, "Horn3or11": 15.0 }
 }
