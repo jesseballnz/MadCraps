@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "0.1",
+	"FriendlyName": "MadCraps Rules",
+	"Description": "Authoritative C++ rules engine for MadCraps (Vegas-accurate craps).",
+	"Category": "Gameplay",
+	"CreatedBy": "MadCraps",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": false,
+	"IsBetaVersion": true,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "MadCrapsRules",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
