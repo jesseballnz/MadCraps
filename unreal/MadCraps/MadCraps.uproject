@@ -1,0 +1,12 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "5.4",
+	"Category": "Games",
+	"Description": "Minimal UE5 project scaffold for MadCraps.",
+	"Plugins": [
+		{
+			"Name": "MadCrapsRules",
+			"Enabled": true
+		}
+	]
+}

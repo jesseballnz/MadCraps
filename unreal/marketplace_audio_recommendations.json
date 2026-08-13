@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "table": "MadCraps 3D Table",
+  "categories": [
+    {
+      "name": "dice",
+      "cueTypes": ["DiceRollStart", "DiceBounce", "DiceSettle"],
+      "marketplaceSearchTerms": [
+        "dice sound effects",
+        "board game foley",
+        "casino foley"
+      ],
+      "requiredTraits": [
+        "Multiple short close-mic impact variants",
+        "Wood rail and felt texture",
+        "Clean settle ticks without long tails"
+      ]
+    },
+    {
+      "name": "chips",
+      "cueTypes": ["ChipSingle", "ChipStack", "ChipSweep"],
+      "marketplaceSearchTerms": [
+        "poker chips",
+        "casino chips",
+        "chip foley"
+      ],
+      "requiredTraits": [
+        "Single-chip placements",
+        "Stack grabs and drops",
+        "Dealer sweep or rake-style movements"
+      ]
+    },
+    {
+      "name": "ambience",
+      "cueTypes": ["AmbientLoop"],
+      "marketplaceSearchTerms": [
+        "casino ambience",
+        "crowd ambience",
+        "slots ambience"
+      ],
+      "requiredTraits": [
+        "Loopable stereo beds",
+        "Subtle slot and crowd energy",
+        "No foreground announcements baked in"
+      ]
+    },
+    {
+      "name": "dealer",
+      "cueTypes": [
+        "DealerComingOut",
+        "DealerSevenOut",
+        "DealerPointMade",
+        "DealerNoMoreBets",
+        "DealerPlaceYourBets"
+      ],
+      "marketplaceSearchTerms": [
+        "announcer voice pack",
+        "casino voice",
+        "dealer voice"
+      ],
+      "requiredTraits": [
+        "Dry recordings",
+        "Short callout phrases",
+        "Commercial-safe placeholder licensing"
+      ]
+    }
+  ],
+  "externalLibraries": [
+    "Sonniss GDC bundles",
+    "BOOM Library crowd or ambience packs",
+    "Soundly for temporary searchable foley sourcing"
+  ]
+}

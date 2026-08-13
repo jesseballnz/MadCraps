@@ -1,4 +1,5 @@
 using UnrealBuildTool;
+using System.IO;
 
 public class MadCrapsRules : ModuleRules
 {
@@ -8,7 +9,8 @@ public class MadCrapsRules : ModuleRules
 
 		PublicIncludePaths.AddRange(
 			new string[] {
-				" MadCrapsRules/Public"
+				Path.Combine(ModuleDirectory, "Public"),
+				Path.GetFullPath(Path.Combine(ModuleDirectory, "../../../rules/src"))
 			}
 		);
 
@@ -30,7 +32,10 @@ public class MadCrapsRules : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
-				// ... add any private deps
+				"PhysicsCore",
+				"RenderCore",
+				"Json",
+				"JsonUtilities"
 			}
 		);
 	}
