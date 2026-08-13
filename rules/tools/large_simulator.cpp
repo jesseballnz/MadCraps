@@ -54,16 +54,35 @@ double simulate_until_resolved(RulesEngine& engine, const Bet& bet) {
         int target = 0;
         while (true) {
             const RollResult roll = engine.rollDice();
+            const int total = roll.total();
+
+            if (target == 0) {
+                if (bet.type == BetType::Come) {
+                    if (total == 7 || total == 11) {
+                        return bet.amount;
+                    }
+                    if (total == 2 || total == 3 || total == 12) {
+                        return -bet.amount;
+                    }
+                } else {
+                    if (total == 2 || total == 3) {
+                        return bet.amount;
+                    }
+                    if (total == 7 || total == 11) {
+                        return -bet.amount;
+                    }
+                    if (total == 12) {
+                        return 0.0;
+                    }
+                }
+
+                target = total;
+                continue;
+            }
+
             Bet active_bet = bet;
             active_bet.target = target;
             const double net = engine.resolveBetsOnRoll(std::vector<Bet>{active_bet}, roll, 0).front().net;
-            if (target == 0) {
-                const int total = roll.total();
-                if (total == 4 || total == 5 || total == 6 || total == 8 || total == 9 || total == 10) {
-                    target = total;
-                    continue;
-                }
-            }
             if (std::abs(net) > 1e-12) {
                 return net;
             }
