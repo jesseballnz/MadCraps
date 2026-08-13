@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "MadCrapsDiceTypes.h"
+#include "MadCrapsRulesWrapper.h"
 #include "MadCrapsTableActor.generated.h"
 
 class AMadCrapsDieActor;
@@ -33,6 +34,21 @@ struct FMadCrapsLabelSpec
 	float Scale = 36.0f;
 };
 
+USTRUCT(BlueprintType)
+struct MADCRAPSRULES_API FMadCrapsResolvedBet
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MadCraps|Bets")
+	FMadCrapsBet Bet;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MadCraps|Bets")
+	FMadCrapsPayout Payout;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MadCraps|Bets")
+	bool bRemainsActive = false;
+};
+
 UCLASS(Blueprintable)
 class MADCRAPSRULES_API AMadCrapsTableActor : public AActor
 {
@@ -46,6 +62,45 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "MadCraps|Dice")
 	bool ApplyAuthoritativeDiceRoll(const FMadCrapsAuthoritativeRoll& Roll);
+
+	UFUNCTION(BlueprintCallable, Category = "MadCraps|Bets")
+	bool PlacePassBet(double Amount, const FString& Tag = TEXT(""));
+
+	UFUNCTION(BlueprintCallable, Category = "MadCraps|Bets")
+	bool PlaceFieldBet(double Amount, const FString& Tag = TEXT(""));
+
+	UFUNCTION(BlueprintCallable, Category = "MadCraps|Bets")
+	bool PlacePlaceBet(int32 Number, double Amount, const FString& Tag = TEXT(""));
+
+	UFUNCTION(BlueprintCallable, Category = "MadCraps|Bets")
+	bool PlaceHardwayBet(int32 Number, double Amount, const FString& Tag = TEXT(""));
+
+	UFUNCTION(BlueprintCallable, Category = "MadCraps|Bets")
+	bool PlaceBet(const FMadCrapsBet& Bet);
+
+	UFUNCTION(BlueprintCallable, Category = "MadCraps|Bets")
+	bool RemoveBetByIndex(int32 BetIndex);
+
+	UFUNCTION(BlueprintCallable, Category = "MadCraps|Bets")
+	int32 RemoveBetsByTag(const FString& Tag);
+
+	UFUNCTION(BlueprintCallable, Category = "MadCraps|Bets")
+	void ClearAllBets();
+
+	UFUNCTION(BlueprintPure, Category = "MadCraps|Bets")
+	TArray<FMadCrapsBet> GetActiveBets() const { return ActiveBets; }
+
+	UFUNCTION(BlueprintPure, Category = "MadCraps|Bets")
+	int32 GetCurrentPoint() const { return CurrentPoint; }
+
+	UFUNCTION(BlueprintCallable, Category = "MadCraps|Bets")
+	void SetCurrentPoint(int32 NewPoint);
+
+	UFUNCTION(BlueprintCallable, Category = "MadCraps|Bets")
+	TArray<FMadCrapsResolvedBet> ResolveActiveBetsForRoll(const FMadCrapsRollResult& Roll);
+
+	UFUNCTION(BlueprintCallable, Category = "MadCraps|Bets")
+	TArray<FMadCrapsResolvedBet> ResolveActiveBetsForDice(int32 Die1, int32 Die2);
 
 protected:
 	virtual void OnConstruction(const FTransform& Transform) override;
@@ -111,6 +166,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MadCraps|Dice")
 	TObjectPtr<UMadCrapsDiceRollCoordinatorComponent> DiceRollCoordinator;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MadCraps|Bets")
+	TObjectPtr<UMadCrapsRulesWrapper> RulesWrapper;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MadCraps|Dice")
 	TSubclassOf<AMadCrapsDieActor> DieActorClass;
 
@@ -119,6 +177,12 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<AMadCrapsDieActor> DieTwoActor;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MadCraps|Bets")
+	TArray<FMadCrapsBet> ActiveBets;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MadCraps|Bets", meta = (ClampMin = "0"))
+	int32 CurrentPoint = 0;
 
 	void RebuildTable();
 	void ClearGeneratedComponents();
@@ -132,4 +196,9 @@ private:
 	void EnsureDiceActors();
 	FTransform GetDieSpawnTransform(int32 DieIndex) const;
 	UMaterialInstanceDynamic* CreateColorMaterial(UPrimitiveComponent* Component, const FLinearColor& Color) const;
+	bool ValidateBet(const FMadCrapsBet& Bet) const;
+	bool IsValidPlaceNumber(int32 Number) const;
+	bool IsValidHardwayNumber(int32 Number) const;
+	bool ShouldKeepBetAfterRoll(const FMadCrapsBet& Bet, const FMadCrapsPayout& Payout) const;
+	int32 GetNextPointForRoll(const FMadCrapsRollResult& Roll) const;
 };

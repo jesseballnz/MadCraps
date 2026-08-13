@@ -11,7 +11,7 @@ Steps to integrate:
 
 Included in this scaffold:
 - `UMadCrapsRulesWrapper`: Blueprint-facing wrapper around the native rules engine.
-- `AMadCrapsTableActor`: procedural table geometry, felt, layout, and chip stacks using engine primitives.
+- `AMadCrapsTableActor`: procedural table geometry, felt, layout, chip stacks, and a Blueprint/C++ betting API for Pass, Place, Field, and Hardway bets.
 - `AMadCrapsDieActor` + `UMadCrapsDiceRollCoordinatorComponent`: local suspense roll plus authoritative settle path for dice.
 - `CRAPS_TABLE_LEVEL_GUIDE.md`: level setup notes and marketplace asset suggestions.
 
@@ -20,6 +20,7 @@ Dice flow:
 2. Resolve the actual dice values through the rules engine or server.
 3. Package the result into `FMadCrapsAuthoritativeRoll`, including optional token/signature metadata.
 4. Call `ApplyAuthoritativeDiceRoll(...)` to snap both dice to the canonical outcome after the reveal delay.
+5. Use `PlacePassBet`, `PlacePlaceBet`, `PlaceFieldBet`, `PlaceHardwayBet`, or generic `PlaceBet`, then call `ResolveActiveBetsForRoll` or `ResolveActiveBetsForDice` to update the table's active wager state and point.
 
 The coordinator supports two modes:
 - `Animated`: deterministic anticipation roll with no collider tuning required.

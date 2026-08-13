@@ -23,6 +23,7 @@ AMadCrapsTableActor::AMadCrapsTableActor()
 	SetRootComponent(SceneRoot);
 
 	DiceRollCoordinator = CreateDefaultSubobject<UMadCrapsDiceRollCoordinatorComponent>(TEXT("DiceRollCoordinator"));
+	RulesWrapper = CreateDefaultSubobject<UMadCrapsRulesWrapper>(TEXT("RulesWrapper"));
 	DieActorClass = AMadCrapsDieActor::StaticClass();
 
 	ChipColors = {
@@ -62,6 +63,137 @@ bool AMadCrapsTableActor::ApplyAuthoritativeDiceRoll(const FMadCrapsAuthoritativ
 {
 	EnsureDiceActors();
 	return DiceRollCoordinator ? DiceRollCoordinator->SubmitAuthoritativeRoll(Roll) : false;
+}
+
+bool AMadCrapsTableActor::PlacePassBet(const double Amount, const FString& Tag)
+{
+	FMadCrapsBet Bet;
+	Bet.Type = EMadCrapsBetType::PassLine;
+	Bet.Amount = Amount;
+	Bet.Tag = Tag;
+	return PlaceBet(Bet);
+}
+
+bool AMadCrapsTableActor::PlaceFieldBet(const double Amount, const FString& Tag)
+{
+	FMadCrapsBet Bet;
+	Bet.Type = EMadCrapsBetType::Field;
+	Bet.Amount = Amount;
+	Bet.Tag = Tag;
+	return PlaceBet(Bet);
+}
+
+bool AMadCrapsTableActor::PlacePlaceBet(const int32 Number, const double Amount, const FString& Tag)
+{
+	FMadCrapsBet Bet;
+	Bet.Type = EMadCrapsBetType::Place;
+	Bet.Target = Number;
+	Bet.Amount = Amount;
+	Bet.Tag = Tag;
+	return PlaceBet(Bet);
+}
+
+bool AMadCrapsTableActor::PlaceHardwayBet(const int32 Number, const double Amount, const FString& Tag)
+{
+	FMadCrapsBet Bet;
+	Bet.Type = EMadCrapsBetType::Hardway;
+	Bet.Target = Number;
+	Bet.Amount = Amount;
+	Bet.Tag = Tag;
+	return PlaceBet(Bet);
+}
+
+bool AMadCrapsTableActor::PlaceBet(const FMadCrapsBet& Bet)
+{
+	if (!ValidateBet(Bet))
+	{
+		return false;
+	}
+
+	ActiveBets.Add(Bet);
+	return true;
+}
+
+bool AMadCrapsTableActor::RemoveBetByIndex(const int32 BetIndex)
+{
+	if (!ActiveBets.IsValidIndex(BetIndex))
+	{
+		return false;
+	}
+
+	ActiveBets.RemoveAt(BetIndex);
+	return true;
+}
+
+int32 AMadCrapsTableActor::RemoveBetsByTag(const FString& Tag)
+{
+	if (Tag.IsEmpty())
+	{
+		return 0;
+	}
+
+	const int32 RemovedCount = ActiveBets.RemoveAll([&Tag](const FMadCrapsBet& Bet)
+	{
+		return Bet.Tag == Tag;
+	});
+
+	return RemovedCount;
+}
+
+void AMadCrapsTableActor::ClearAllBets()
+{
+	ActiveBets.Reset();
+}
+
+void AMadCrapsTableActor::SetCurrentPoint(const int32 NewPoint)
+{
+	CurrentPoint = IsValidPlaceNumber(NewPoint) ? NewPoint : 0;
+}
+
+TArray<FMadCrapsResolvedBet> AMadCrapsTableActor::ResolveActiveBetsForRoll(const FMadCrapsRollResult& Roll)
+{
+	TArray<FMadCrapsResolvedBet> Results;
+	if (!RulesWrapper || ActiveBets.IsEmpty())
+	{
+		CurrentPoint = GetNextPointForRoll(Roll);
+		return Results;
+	}
+
+	const TArray<FMadCrapsPayout> Payouts = RulesWrapper->ResolveBets(ActiveBets, Roll, CurrentPoint);
+	Results.Reserve(ActiveBets.Num());
+
+	TArray<FMadCrapsBet> RemainingBets;
+	RemainingBets.Reserve(ActiveBets.Num());
+
+	for (int32 BetIndex = 0; BetIndex < ActiveBets.Num(); ++BetIndex)
+	{
+		const FMadCrapsBet& Bet = ActiveBets[BetIndex];
+		const FMadCrapsPayout Payout = Payouts.IsValidIndex(BetIndex) ? Payouts[BetIndex] : FMadCrapsPayout{};
+		const bool bKeepBet = ShouldKeepBetAfterRoll(Bet, Payout);
+
+		FMadCrapsResolvedBet& Result = Results.AddDefaulted_GetRef();
+		Result.Bet = Bet;
+		Result.Payout = Payout;
+		Result.bRemainsActive = bKeepBet;
+
+		if (bKeepBet)
+		{
+			RemainingBets.Add(Bet);
+		}
+	}
+
+	ActiveBets = MoveTemp(RemainingBets);
+	CurrentPoint = GetNextPointForRoll(Roll);
+	return Results;
+}
+
+TArray<FMadCrapsResolvedBet> AMadCrapsTableActor::ResolveActiveBetsForDice(const int32 Die1, const int32 Die2)
+{
+	FMadCrapsRollResult Roll;
+	Roll.Die1 = Die1;
+	Roll.Die2 = Die2;
+	Roll.Total = Die1 + Die2;
+	return ResolveActiveBetsForRoll(Roll);
 }
 
 void AMadCrapsTableActor::ClearGeneratedComponents()
@@ -337,4 +469,75 @@ FTransform AMadCrapsTableActor::GetDieSpawnTransform(const int32 DieIndex) const
 		TableSize.Z + FeltThickness + 9.0f);
 
 	return FTransform(FRotator::ZeroRotator, GetActorTransform().TransformPosition(LocalLocation));
+}
+
+bool AMadCrapsTableActor::ValidateBet(const FMadCrapsBet& Bet) const
+{
+	if (Bet.Amount <= 0.0)
+	{
+		return false;
+	}
+
+	switch (Bet.Type)
+	{
+	case EMadCrapsBetType::PassLine:
+	case EMadCrapsBetType::Field:
+		return Bet.Target == 0;
+
+	case EMadCrapsBetType::Place:
+		return IsValidPlaceNumber(Bet.Target);
+
+	case EMadCrapsBetType::Hardway:
+		return IsValidHardwayNumber(Bet.Target);
+
+	default:
+		return false;
+	}
+}
+
+bool AMadCrapsTableActor::IsValidPlaceNumber(const int32 Number) const
+{
+	return Number == 4 || Number == 5 || Number == 6 || Number == 8 || Number == 9 || Number == 10;
+}
+
+bool AMadCrapsTableActor::IsValidHardwayNumber(const int32 Number) const
+{
+	return Number == 4 || Number == 6 || Number == 8 || Number == 10;
+}
+
+bool AMadCrapsTableActor::ShouldKeepBetAfterRoll(const FMadCrapsBet& Bet, const FMadCrapsPayout& Payout) const
+{
+	switch (Bet.Type)
+	{
+	case EMadCrapsBetType::Field:
+		return false;
+
+	case EMadCrapsBetType::PassLine:
+		return Payout.Description == TEXT("PassLine point established") || Payout.Description == TEXT("No resolution");
+
+	case EMadCrapsBetType::Place:
+		return Payout.Description == TEXT("Place win") || Payout.Description == TEXT("No resolution");
+
+	case EMadCrapsBetType::Hardway:
+		return Payout.Description == TEXT("Hardway win") || Payout.Description == TEXT("No resolution");
+
+	default:
+		return false;
+	}
+}
+
+int32 AMadCrapsTableActor::GetNextPointForRoll(const FMadCrapsRollResult& Roll) const
+{
+	const int32 Total = Roll.Die1 + Roll.Die2;
+	if (CurrentPoint == 0)
+	{
+		return IsValidPlaceNumber(Total) ? Total : 0;
+	}
+
+	if (Total == CurrentPoint || Total == 7)
+	{
+		return 0;
+	}
+
+	return CurrentPoint;
 }

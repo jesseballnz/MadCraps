@@ -5,9 +5,13 @@ edition = "2021"
 description = "Authoritative Rust server for MadCraps (signed rolls, bet validation, audit logs)"
 
 [dependencies]
+axum = "0.7"
+base64 = "0.22"
+hmac = "0.12"
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 uuid = { version = "1", features = ["v4"] }
 rand = "0.8"
 chrono = "0.4"
+sha2 = "0.10"

@@ -1,18 +1,42 @@
 # MadCraps Server (Rust)
 
-Authoritative backend for MadCraps multiplayer.
+Minimal authoritative backend stub for MadCraps multiplayer.
 
-## Responsibilities
-- Validate bets against current table rules
-- Generate cryptographically signed roll tokens
-- Resolve rounds using the authoritative rules engine
-- Maintain audit logs for every roll/bet
-- Simple player session & balance tracking (MVP)
+## What it does
+- Exposes `GET /health` for a simple readiness check
+- Accepts `POST /bets` with a player id, wager type, and amount
+- Rolls two server-side dice and returns the authoritative result
+- Signs each roll payload with HMAC-SHA256 so clients can verify the response came from the server
+- Keeps accepted bets in memory as a temporary stub audit log
 
-## Tech
-- Tokio + async runtime
-- WebSocket protocol for clients
-- Will eventually link or re-implement core rules logic in Rust for maximum safety
+## Stack
+- Tokio runtime
+- Axum HTTP server
+- HMAC-SHA256 signatures
 
-## Status
-Skeleton stage. Next: basic WS server + signed roll generation.
+## Run
+```bash
+cargo run
+```
+
+Optionally provide a stable signing key:
+
+```bash
+MADCRAPS_SIGNING_KEY=dev-secret cargo run
+```
+
+## Example request
+```bash
+curl -X POST http://127.0.0.1:8080/bets \
+  -H 'content-type: application/json' \
+  -d '{
+    "player_id": "player-123",
+    "amount": 25,
+    "wager": "pass_line"
+  }'
+```
+
+## Notes
+- The current outcome resolution is intentionally minimal and only covers a few common craps bet types.
+- Bets and audit data are stored in memory only.
+- This is a stub meant to be replaced with real session handling, balance checks, persistence, and full table-state management.
