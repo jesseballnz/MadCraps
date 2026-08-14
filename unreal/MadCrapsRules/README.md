@@ -1,31 +1,16 @@
-MadCrapsRules Unreal plugin skeleton
+## Client verification notes (Ed25519)
 
-This directory contains a minimal Unreal Engine 5 plugin module that provides a Blueprint-callable bridge to the authoritative MadCraps rules engine.
+The server endpoint `/roll` returns JSON with these fields:
 
-Design choices (default)
-- Consumption method: prebuilt static library (ThirdParty) — place compiled artifacts in unreal/MadCrapsRules/ThirdParty/madcraps_rules/{include,lib}
-- Blueprint access: UBlueprintFunctionLibrary provides ExecuteRoll and VerifySignedRoll stubs for prototyping.
+- `result`: the RollResult JSON (seed, dice_a, dice_b, outcome, debug_info)
+- `signature`: base64-encoded Ed25519 signature over the serialized `result` bytes
+- `public_key`: base64-encoded Ed25519 public key (for testing). In production, clients should obtain the server public key via a trusted channel or configuration.
 
-What the skeleton includes
-- MadCrapsRules.Build.cs: Module build file with notes for linking a ThirdParty static library.
-- Module entry files (Public/Private) with Startup/Shutdown hooks.
-- RulesBridge (Public/Private): Blueprint-callable API and prototype implementations.
+To verify on the client (pseudo):
 
-How to use
-1. Copy or build the rules engine static library for your platform into:
-   unreal/MadCrapsRules/ThirdParty/madcraps_rules/lib/<Platform>/
-   and headers into:
-   unreal/MadCrapsRules/ThirdParty/madcraps_rules/include/
+1. Decode the base64 `public_key` into bytes and construct an Ed25519 public key object.
+2. Decode the base64 `signature` into bytes.
+3. Serialize the `result` JSON exactly as the server did (the server uses compact JSON). For interoperability, it's recommended to verify using the serialized bytes returned by the server, not a re-serialized object on the client — i.e., the server may also return a `signed_blob` of bytes.
+4. Use the public key to verify the signature against the serialized `result`.
 
-2. Edit MadCrapsRules.Build.cs to add PublicIncludePaths and PublicAdditionalLibraries entries for each platform you support. Example (Win64):
-   PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "madcraps_rules", "include"));
-   PublicAdditionalLibraries.Add(Path.Combine(ThirdPartyPath, "madcraps_rules", "lib", "Win64", "madcraps_rules.lib"));
-
-3. In your UE5 project, copy the MadCrapsRules plugin folder into <YourProject>/Plugins/ and open the project in the Editor. Build the project (or the plugin) using your IDE/UnrealBuildTool.
-
-4. Use the Blueprint node "ExecuteRoll" in Blueprints (or call from C++) to test. For production, ensure server executes rolls and signs the results; clients should call VerifySignedRoll before accepting outcomes.
-
-Next steps we can take
-- Implement native bindings (C API) and call into the real rules engine from RulesBridge.
-- Add platform-specific linking logic to Build.cs and provide prebuilt binaries in ThirdParty.
-- Add example level and Blueprint test assets (dice actor, simple UI).
+In the Unreal plugin, implement verification using a small Ed25519 library or include a tiny verification function that accepts the server's public key and signature.
