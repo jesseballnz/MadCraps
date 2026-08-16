@@ -57,23 +57,17 @@ void ATestRoller::OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr R
         return;
     }
 
-    // Extract the serialized result - the server returns "result" object; we need the compact serialized string to verify.
-    // We'll re-serialize the result object compactly to match server serialization.
-    TSharedPtr<FJsonObject> ResultObj = RootObj->GetObjectField(TEXT("result"));
-    FString SerializedResult;
-    TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&SerializedResult);
-    FJsonSerializer::Serialize(ResultObj.ToSharedRef(), Writer);
-
+    // Use the signed_blob returned by the server to avoid fragile re-serialization
+    FString SignedBlob = RootObj->GetStringField(TEXT("signed_blob"));
     FString Signature = RootObj->GetStringField(TEXT("signature"));
 
     // Get public key from server (simpler to use /public_key)
     FString PubKeyUrl = ServerBaseUrl + TEXT("/public_key");
-    TSharedRef<IHttpRequest, ESPMode::ThreadSafe> PubReq = FHttpModule::Get().CreateRequest();
+    TSharedRef<IHttpRequest, ESPMode::ThreadSafe> PubReq = TSharedRef<IHttpRequest, ESPMode::ThreadSafe>(FHttpModule::Get().CreateRequest());
     PubReq->SetVerb(TEXT("GET"));
     PubReq->SetURL(PubKeyUrl);
 
-    // We'll do a synchronous-ish sequence: request public key, then verify; for simplicity, process in a nested callback.
-    PubReq->OnProcessRequestComplete().BindLambda([this, SerializedResult, Signature, ResultObj](FHttpRequestPtr Req2, FHttpResponsePtr Resp2, bool bOk2)
+    PubReq->OnProcessRequestComplete().BindLambda([this, SignedBlob, Signature](FHttpRequestPtr Req2, FHttpResponsePtr Resp2, bool bOk2)
     {
         if (!bOk2 || !Resp2.IsValid())
         {
@@ -83,7 +77,7 @@ void ATestRoller::OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr R
 
         FString PubKeyB64 = Resp2->GetContentAsString();
         FRollResult OutResult;
-        bool ok = UMadCrapsRulesBridge::VerifySignedRollBlob(SerializedResult, Signature, PubKeyB64, OutResult);
+        bool ok = UMadCrapsRulesBridge::VerifySignedRollBlob(SignedBlob, Signature, PubKeyB64, OutResult);
         if (!ok)
         {
             UE_LOG(LogTemp, Warning, TEXT("Signature verification failed"));

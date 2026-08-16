@@ -36,6 +36,7 @@ struct RollResult {
 struct RollResponse {
     result: RollResult,
     signature: String,      // base64(signature)
+    signed_blob: String,    // compact JSON string that was signed (use this for verification)
 }
 
 async fn handle_roll(State(state): State<AppState>, Json(req): Json<RollRequest>) -> Json<RollResponse> {
@@ -78,14 +79,16 @@ async fn handle_roll(State(state): State<AppState>, Json(req): Json<RollRequest>
     };
 
     // Serialize the result deterministically (compact) and sign it
-    let serialized = serde_json::to_vec(&result).expect("serialize roll result");
-    let signature: Signature = state.keypair.sign(&serialized);
+    let serialized_vec = serde_json::to_vec(&result).expect("serialize roll result");
+    let serialized = String::from_utf8(serialized_vec.clone()).expect("utf8");
+    let signature: Signature = state.keypair.sign(&serialized_vec);
 
     let sig_b64 = general_purpose::STANDARD.encode(signature.to_bytes());
 
     let response = RollResponse {
         result,
         signature: sig_b64,
+        signed_blob: serialized,
     };
 
     Json(response)
