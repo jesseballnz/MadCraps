@@ -34,6 +34,12 @@ public:
     static FRollResult ExecuteRoll(int32 Seed, const FString& BetConfig, FString& OutSignedToken);
 
     // Verify a signed roll token and return the authoritative result. Clients should call this to validate server-sent tokens.
+    // Legacy/prototype: accepts prototype token strings like "PROTOTYPE_TOKEN_<seed>".
     UFUNCTION(BlueprintCallable, Category = "MadCraps|Rules")
     static bool VerifySignedRoll(const FString& SignedToken, FRollResult& OutResult);
+
+    // Newer: verify using server-returned serialized result bytes + signature + public key (base64).
+    // This is the recommended method for real-world verification.
+    UFUNCTION(BlueprintCallable, Category = "MadCraps|Rules")
+    static bool VerifySignedRollBlob(const FString& SerializedResult, const FString& SignatureBase64, const FString& PublicKeyBase64, FRollResult& OutResult);
 };

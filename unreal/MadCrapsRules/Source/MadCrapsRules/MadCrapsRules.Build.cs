@@ -8,7 +8,7 @@ public class MadCrapsRules : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
         PublicDependencyModuleNames.AddRange(
-            new string[] { "Core", "CoreUObject", "Engine", "Projects" }
+            new string[] { "Core", "CoreUObject", "Engine", "Projects", "Json", "JsonUtilities" }
         );
 
         PrivateDependencyModuleNames.AddRange(
@@ -24,5 +24,8 @@ public class MadCrapsRules : ModuleRules
         // PublicAdditionalLibraries.Add(Path.Combine(ThirdPartyPath, "madcraps_rules", "lib", "Win64", "libmadcraps_rules.a"));
 
         // If you prefer, compile the rules engine into this module directly by adding the sources to this target.
+
+        // Definitions to allow switching implementations later
+        PublicDefinitions.Add("MADCRAPS_USE_THIRDPARTY=0");
     }
 }
