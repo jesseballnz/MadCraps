@@ -1,1 +1,1 @@
-Update RulesBridge: add VerifySignedRollBlob and native verification stub. Add NativeVerify.cpp placeholder and include JSON modules in Build.cs.
+Add real verification shim and native madcraps stub; add DiceActor prototype actor for Blueprints.

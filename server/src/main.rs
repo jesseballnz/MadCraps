@@ -1,5 +1,5 @@
-use axum::{routing::post, Json, Router, extract::State};
-use ed25519_dalek::{Keypair, PublicKey, Signature, Signer};
+use axum::{routing::{get, post}, Json, Router, extract::State};
+use ed25519_dalek::{Keypair, PublicKey, Signature, Signer, Verifier};
 use rand_chacha::ChaCha20Rng;
 use rand_core::{RngCore, SeedableRng};
 use serde::{Deserialize, Serialize};
@@ -7,6 +7,8 @@ use sha2::{Digest, Sha256};
 use std::{net::SocketAddr, sync::Arc};
 use base64::{engine::general_purpose, Engine as _};
 use tracing_subscriber;
+use std::fs;
+use std::path::Path;
 
 #[derive(Clone)]
 struct AppState {
@@ -34,7 +36,6 @@ struct RollResult {
 struct RollResponse {
     result: RollResult,
     signature: String,      // base64(signature)
-    public_key: String,     // base64(public_key) for client verification
 }
 
 async fn handle_roll(State(state): State<AppState>, Json(req): Json<RollRequest>) -> Json<RollResponse> {
@@ -81,15 +82,43 @@ async fn handle_roll(State(state): State<AppState>, Json(req): Json<RollRequest>
     let signature: Signature = state.keypair.sign(&serialized);
 
     let sig_b64 = general_purpose::STANDARD.encode(signature.to_bytes());
-    let pub_b64 = general_purpose::STANDARD.encode(state.keypair.public.as_bytes());
 
     let response = RollResponse {
         result,
         signature: sig_b64,
-        public_key: pub_b64,
     };
 
     Json(response)
+}
+
+async fn handle_public_key(State(state): State<AppState>) -> String {
+    // Return base64 public key for clients to use (for testing). In production, use secure distribution.
+    base64::engine::general_purpose::STANDARD.encode(state.keypair.public.as_bytes())
+}
+
+fn load_or_generate_keypair(path: &Path) -> Keypair {
+    if path.exists() {
+        let b64 = fs::read_to_string(path).expect("read key file");
+        let bytes = general_purpose::STANDARD.decode(b64.trim()).expect("decode base64 key");
+        // Expect 64 bytes private key (expanded): ed25519_dalek::Keypair::from_bytes
+        if bytes.len() == 64 {
+            return Keypair::from_bytes(&bytes).expect("valid keypair bytes");
+        }
+        panic!("Invalid key file length");
+    } else {
+        // Generate and save
+        use rand_core::OsRng;
+        let mut csprng = OsRng;
+        let keypair = Keypair::generate(&mut csprng);
+        let bytes = keypair.to_bytes();
+        let b64 = general_purpose::STANDARD.encode(bytes);
+        // Ensure parent dir exists
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).ok();
+        }
+        fs::write(path, b64).expect("write key file");
+        keypair
+    }
 }
 
 #[tokio::main]
@@ -98,11 +127,9 @@ async fn main() {
 
     tracing::info!("MadCraps authoritative server starting...");
 
-    // Keypair generation: in production, load this from secure storage. For example, set via env var or file.
-    // Here we generate a new ephemeral keypair on startup and log the public key so clients can verify during testing.
-    use rand_core::OsRng;
-    let mut csprng = OsRng;
-    let keypair = Keypair::generate(&mut csprng);
+    // Keypair: load from server/keys/priv.key (base64 of 64 byte keypair) or generate and store for testing.
+    let key_path = Path::new("server/keys/priv.key");
+    let keypair = load_or_generate_keypair(key_path);
     let pub_b64 = base64::engine::general_purpose::STANDARD.encode(keypair.public.as_bytes());
     tracing::info!("Server Ed25519 public key: {}", pub_b64);
 
@@ -110,6 +137,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/roll", post(handle_roll))
+        .route("/public_key", get(handle_public_key))
         .with_state(shared);
 
     // Bind address
