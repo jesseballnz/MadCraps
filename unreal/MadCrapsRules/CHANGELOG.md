@@ -1,1 +1,1 @@
-Add TestRoller actor (HTTP client) and update Build.cs to include HTTP module. TestRoller requests /roll, fetches /public_key, verifies signature, then drives DiceActor.
+Update: add TestLevelBootstrap to auto-spawn TestRoller and DiceActor; embed ed25519_ref API (safe default requires libsodium).
