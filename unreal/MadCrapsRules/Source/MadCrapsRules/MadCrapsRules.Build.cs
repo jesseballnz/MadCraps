@@ -1,37 +1,24 @@
+using System.IO;
 using UnrealBuildTool;
 
 public class MadCrapsRules : ModuleRules
 {
-	public MadCrapsRules(ReadOnlyTargetRules Target) : base(Target)
-	{
-		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+    public MadCrapsRules(ReadOnlyTargetRules Target) : base(Target)
+    {
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicIncludePaths.AddRange(
-			new string[] {
-				" MadCrapsRules/Public"
-			}
-		);
+        PublicDependencyModuleNames.AddRange(
+            new string[] { "Core", "CoreUObject", "Engine", "Projects", "Json", "JsonUtilities", "HTTP" }
+        );
 
-		PrivateIncludePaths.AddRange(
-			new string[] {
-				"MadCrapsRules/Private"
-			}
-		);
+        PrivateDependencyModuleNames.AddRange(
+            new string[] { }
+        );
 
-		PublicDependencyModuleNames.AddRange(
-			new string[]
-			{
-				"Core",
-				"CoreUObject",
-				"Engine"
-			}
-		);
+        // ThirdParty library linking (optional)
+        string ThirdPartyPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "ThirdParty"));
 
-		PrivateDependencyModuleNames.AddRange(
-			new string[]
-			{
-				// ... add any private deps
-			}
-		);
-	}
+        // Definitions to allow switching implementations later
+        PublicDefinitions.Add("MADCRAPS_USE_THIRDPARTY=0");
+    }
 }

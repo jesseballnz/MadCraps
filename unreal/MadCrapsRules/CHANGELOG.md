@@ -1,0 +1,1 @@
+Update: add TestLevelBootstrap to auto-spawn TestRoller and DiceActor; embed ed25519_ref API (safe default requires libsodium).
