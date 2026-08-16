@@ -1,1 +1,1 @@
-Add real verification shim and native madcraps stub; add DiceActor prototype actor for Blueprints.
+Add TestRoller actor (HTTP client) and update Build.cs to include HTTP module. TestRoller requests /roll, fetches /public_key, verifies signature, then drives DiceActor.

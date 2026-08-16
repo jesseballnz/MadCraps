@@ -8,7 +8,7 @@ public class MadCrapsRules : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
         PublicDependencyModuleNames.AddRange(
-            new string[] { "Core", "CoreUObject", "Engine", "Projects", "Json", "JsonUtilities" }
+            new string[] { "Core", "CoreUObject", "Engine", "Projects", "Json", "JsonUtilities", "HTTP" }
         );
 
         PrivateDependencyModuleNames.AddRange(
@@ -17,13 +17,6 @@ public class MadCrapsRules : ModuleRules
 
         // ThirdParty library linking (optional)
         string ThirdPartyPath = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", "..", "ThirdParty"));
-        // Expect prebuilt static libs at: ThirdParty/madcraps_rules/lib/<Platform>/ and headers at ThirdParty/madcraps_rules/include
-
-        // Example: Add additional include paths and link libraries here when you place the prebuilt artifacts.
-        // PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "madcraps_rules", "include"));
-        // PublicAdditionalLibraries.Add(Path.Combine(ThirdPartyPath, "madcraps_rules", "lib", "Win64", "libmadcraps_rules.a"));
-
-        // If you prefer, compile the rules engine into this module directly by adding the sources to this target.
 
         // Definitions to allow switching implementations later
         PublicDefinitions.Add("MADCRAPS_USE_THIRDPARTY=0");
