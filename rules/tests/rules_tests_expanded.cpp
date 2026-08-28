@@ -1,4 +1,4 @@
-# Expanded tests for the Rules Engine covering more bet types
+// Expanded tests for the Rules Engine covering more bet types
 #include "../src/RulesEngine.h"
 #include <iostream>
 #include <cassert>
