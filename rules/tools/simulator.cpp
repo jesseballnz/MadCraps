@@ -1,4 +1,4 @@
-# Simple simulator to estimate house edge for some bets
+// Simple simulator to estimate house edge for some bets
 #include "../src/RulesEngine.h"
 #include <iostream>
 #include <chrono>
