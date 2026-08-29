@@ -8,11 +8,26 @@ public class MadCrapsRules : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
         PublicDependencyModuleNames.AddRange(
-            new string[] { "Core", "CoreUObject", "Engine", "Projects", "Json", "JsonUtilities", "HTTP" }
+            new string[]
+            {
+                "Core",
+                "CoreUObject",
+                "Engine",
+                "Projects",
+                "Json",
+                "JsonUtilities",
+                "HTTP",
+                // Camera & post-process support for CrapsCamera actor
+                "CinematicCamera",
+            }
         );
 
         PrivateDependencyModuleNames.AddRange(
-            new string[] { }
+            new string[]
+            {
+                "RenderCore",
+                "RHI",
+            }
         );
 
         // ThirdParty library linking (optional)
