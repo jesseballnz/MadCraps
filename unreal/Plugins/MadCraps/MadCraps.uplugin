@@ -1,0 +1,35 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0.0",
+  "FriendlyName": "MadCraps - Vegas Craps Game Engine",
+  "Description": "A professional, rules-accurate craps game engine with configurable Vegas payouts, multiplayer support, and stunning Nanite+Lumen 3D visuals. Includes authoritative C++ rules engine, Blueprint integration, and multiplayer backend.",
+  "Category": "Gameplay",
+  "CreatedBy": "Jesse Ball",
+  "CreatedByURL": "https://github.com/jesseballnz/MadCraps",
+  "DocsURL": "https://github.com/jesseballnz/MadCraps/wiki",
+  "MarketplaceURL": "",
+  "SupportURL": "https://github.com/jesseballnz/MadCraps/issues",
+  "EngineVersion": "5.4.0",
+  "CanContainContent": true,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "MadCrapsRules",
+      "Type": "Runtime",
+      "LoadingPhase": "Default",
+      "PlatformAllowList": [
+        "Win64",
+        "Mac",
+        "Linux",
+        "IOS",
+        "Android"
+      ]
+    },
+    {
+      "Name": "MadCrapsEditor",
+      "Type": "Editor",
+      "LoadingPhase": "Default"
+    }
+  ]
+}
