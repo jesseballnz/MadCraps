@@ -19,6 +19,24 @@ What's in this commit
 - unreal/PLUGIN_README.md : instructions for adding the rules engine as an Unreal plugin
 - .gitignore
 
+CI, build and packaging
+
+- Stack/build system detected in this repo:
+  - `rules/`: C++17 + CMake
+  - `server/`: Rust (Cargo)
+  - `unreal/`: Unreal plugin scaffolding
+- Cross-platform packaging is configured for `rules/` using CPack:
+  - Windows installer: NSIS `.exe`
+  - macOS installer: `.dmg`
+  - Linux packages: `.deb`, `.rpm`, and `.tar.gz`
+- Local packaging command:
+  - `cmake -S rules -B rules/build -DCMAKE_BUILD_TYPE=Release`
+  - `cmake --build rules/build --config Release`
+  - `ctest --test-dir rules/build -C Release --output-on-failure`
+  - `cd rules/build && cpack -C Release`
+- Artifacts are emitted under `rules/build/`.
+- GitHub Actions (`.github/workflows/ci.yml`) runs build/test/package on Ubuntu, Windows and macOS runners, uploads artifacts, and publishes package artifacts on tag/release workflows.
+
 Next steps
 
 If this looks good I will:
